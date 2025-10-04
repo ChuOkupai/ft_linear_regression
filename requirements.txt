@@ -1,0 +1,4 @@
+coverage==7.10.7
+matplotlib==3.10.6
+matplotx==0.3.10
+tqdm==4.67.1
