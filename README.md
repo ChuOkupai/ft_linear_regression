@@ -68,11 +68,7 @@ The CLI is provided by `ft_linear_regression.py`.
 ### 📚 Train
 
 ```sh
-.venv/bin/python ft_linear_regression.py train -d DATASET.csv \
-	[--feature NAME] [--target NAME] \
-	[--epochs N] [--learning-rate LR] \
-	[--output models/out.json] \
-	[--plot] [--save-plot [path/to/plot.png]]
+.venv/bin/python ft_linear_regression.py train -d datasets/data.csv
 ```
 
 What it does:
