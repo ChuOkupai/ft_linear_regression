@@ -78,6 +78,7 @@ What it does:
 - Standardizes the feature for training, then converts parameters back to original scale
 - Saves the model JSON next to your dataset name inside `models/`
 - Optionally shows a plot and/or saves it as a PNG
+- Prints training statistics if `--statistics` is provided
 
 ### 🔍 Predict
 
@@ -93,6 +94,23 @@ Enter values at the prompt to see predictions. If the model file is missing, a z
 - Use `--feature` and `--target` to pick specific columns by name.
 - Use `--save-plot` without a value to save next to the model file (same stem, `.png`).
 - Press Ctrl+C or Ctrl+D to exit the predictor.
+
+## 👓 Interpreting training statistics
+
+After training with the `--statistics` flag the program prints a few common metrics. Here is a quick, non-technical guide to what each one means and how to read them:
+
+- MSE (Mean Squared Error): the average of squared prediction errors. Because errors are squared, this value emphasises larger mistakes and is expressed in the squared units of the target.
+- RMSE (Root Mean Squared Error): the square root of MSE. It is in the same units as the target and can be read as a "typical" prediction error size.
+- MAE (Mean Absolute Error): the average of absolute errors. Less sensitive to large outliers than RMSE and also in the target's units.
+- R² (Coefficient of Determination): the fraction of the target's variance that the model explains. Values closer to 1 mean the model captures more of the variability; values near 0 mean it captures little. R² can be negative in pathological cases (model worse than predicting the mean).
+
+Quick tips for understanding the numbers:
+- Compare RMSE or MAE to the typical size of your target (for example divide by the mean target) to get a relative error — percentages are easier to judge than raw units.
+- If RMSE is much larger than MAE, a few large errors (outliers) are likely inflating the score.
+- R² gives a sense of explanatory power but not error magnitude; high R² with large RMSE means predictions follow the trend but still miss by a lot in absolute terms.
+- Always inspect residuals (errors) visually: residual vs. feature or residual histogram can reveal non-linearity, heteroscedasticity, or outliers.
+
+These metrics give a compact summary of fit quality. Use them together rather than relying on a single number.
 
 ## 🗂️ Model storage
 

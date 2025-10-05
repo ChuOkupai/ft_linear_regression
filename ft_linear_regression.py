@@ -1,6 +1,6 @@
 import argparse
 from pathlib import Path
-from srcs import Dataset, GradientDescentTrainer, LinearRegressionModel, ModelConfiguration, RegressionVisualizer, Vector
+from srcs import Dataset, GradientDescentTrainer, LinearRegressionModel, ModelConfiguration, RegressionVisualizer, Vector, ModelEvaluator
 
 DEFAULT_LEARNING_RATE = 0.1
 DEFAULT_EPOCHS = 1000
@@ -19,6 +19,7 @@ class CommandLineApplication:
 		train.add_argument('-o', '--output', type=str, default=None, help='Output path for model JSON (mirrors dataset under models/ if omitted).')
 		train.add_argument('-p', '--plot', action='store_true', help='Display interactive plot after training.')
 		train.add_argument('-s', '--save-plot', nargs='?', const='', default=None, help='Save regression plot (optional path; defaults to model path with .png).')
+		train.add_argument('--statistics', action='store_true', help='Display training statistics (MSR, RMSE, R2, etc.) after training.')
 
 		predict = sub.add_parser('predict', help='Generate predictions from a trained model.')
 		predict.add_argument('-m', '--model', type=str, required=True, help='Path to trained model JSON file.')
@@ -62,6 +63,19 @@ class CommandLineApplication:
 			output = model_dir / (dataset_path.stem + '.json')
 		ModelConfiguration(parameters, dataset.feature_name, dataset.target_name).save(output)
 		print(f'Model saved: {output}')
+
+		if args.statistics:
+			metrics = ModelEvaluator().evaluate(dataset, parameters)
+			def fmt(v: float) -> str:
+				return f"{v:.6f}"
+			print('Training statistics:')
+			print(f"  Samples           : {dataset.size}")
+			print(f"  Parameters (θ0,θ1): ({fmt(parameters[0])}, {fmt(parameters[1])})")
+			print('  Metrics:')
+			print(f"    MSE             : {fmt(metrics['MSE'])}")
+			print(f"    RMSE            : {fmt(metrics['RMSE'])}")
+			print(f"    MAE             : {fmt(metrics['MAE'])}")
+			print(f"    R2              : {fmt(metrics['R2'])}")
 
 		visualizer = RegressionVisualizer()
 		save_plot_arg = args.save_plot

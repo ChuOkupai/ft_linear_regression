@@ -19,7 +19,7 @@ predict:
 	$(PYTHON) ft_linear_regression.py predict -m models/data.json
 
 train:
-	$(PYTHON) ft_linear_regression.py train -d datasets/data.csv --plot --save-plot
+	$(PYTHON) ft_linear_regression.py train -d datasets/data.csv --plot --save-plot --statistics
 
 test:
 	$(PYTHON) $(TESTS_ARGS)
