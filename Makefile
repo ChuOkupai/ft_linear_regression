@@ -16,10 +16,10 @@ coverage:
 	$(COVERAGE) report -m --skip-covered
 
 predict:
-	$(PYTHON) ft_linear_regression.py predict models/data.json
+	$(PYTHON) ft_linear_regression.py predict -m models/data.json
 
 train:
-	$(PYTHON) ft_linear_regression.py train --plot datasets/data.csv
+	$(PYTHON) ft_linear_regression.py train -d datasets/data.csv --plot
 
 test:
 	$(PYTHON) $(TESTS_ARGS)

@@ -11,7 +11,7 @@ class CommandLineApplication:
 		sub = parser.add_subparsers(dest='command', required=True)
 
 		train = sub.add_parser('train', help='Train a linear regression model from a CSV dataset.')
-		train.add_argument('dataset', type=str, help='Path to CSV dataset (needs at least two columns).')
+		train.add_argument('-d', '--dataset', type=str, required=True, help='Path to CSV dataset (needs at least two columns).')
 		train.add_argument('--feature', type=str, default=None, help='Feature column name (override first column).')
 		train.add_argument('--target', type=str, default=None, help='Target column name (override second column).')
 		train.add_argument('-e', '--epochs', type=int, default=1000, help='Number of training epochs (default: 1000).')
@@ -21,7 +21,8 @@ class CommandLineApplication:
 		train.add_argument('-s', '--save-plot', nargs='?', const='', default=None, help='Save regression plot (optional path; defaults to model path with .png).')
 
 		predict = sub.add_parser('predict', help='Generate predictions from a trained model.')
-		predict.add_argument('model', type=str, help='Path to trained model JSON file.')
+		predict.add_argument('-m', '--model', type=str, required=True, help='Path to trained model JSON file.')
+
 		return parser
 
 	def _predict(self, args: argparse.Namespace):
@@ -87,4 +88,4 @@ def main() -> int:
 	return CommandLineApplication().run()
 
 if __name__ == '__main__':
-	main()
+    main()

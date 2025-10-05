@@ -68,7 +68,7 @@ The CLI is provided by `ft_linear_regression.py`.
 ### 📚 Train
 
 ```sh
-.venv/bin/python ft_linear_regression.py train DATASET.csv \
+.venv/bin/python ft_linear_regression.py train -d DATASET.csv \
 	[--feature NAME] [--target NAME] \
 	[--epochs N] [--learning-rate LR] \
 	[--output models/out.json] \
@@ -86,7 +86,7 @@ What it does:
 ### 🔍 Predict
 
 ```sh
-.venv/bin/python ft_linear_regression.py predict models/data.json
+.venv/bin/python ft_linear_regression.py predict -m models/data.json
 ```
 
 Enter values at the prompt to see predictions. If the model file is missing, a zero-initialized model is used and you’ll see a warning.
