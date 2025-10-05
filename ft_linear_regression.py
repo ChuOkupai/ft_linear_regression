@@ -24,74 +24,63 @@ class CommandLineApplication:
 		predict.add_argument('model', type=str, help='Path to trained model JSON file.')
 		return parser
 
+	def _predict(self, args: argparse.Namespace):
+		try:
+			cfg = ModelConfiguration.from_file(Path(args.model))
+		except FileNotFoundError as e:
+			print(f'Warning: {e.filename}: {e.strerror}. Using default configuration.')
+			cfg = ModelConfiguration(Vector([0.0, 0.0]), 'feature', 'target')
+		model = LinearRegressionModel(cfg.thetas)
+		print('Enter a feature value to predict (blank line to quit)')
+		while True:
+			try:
+				raw = input('> ')
+			except (EOFError | KeyboardInterrupt):
+				print()
+				break
+			if raw.strip() == '':
+				continue
+			try:
+				input_val = float(raw)
+				print(f'{cfg.feature_name}={input_val} {cfg.target_name}={model.predict(input_val)}')
+			except ValueError:
+				print('Error: Invalid number')
+
+	def _train(self, args: argparse.Namespace):
+		dataset_path = Path(args.dataset)
+		epochs = int(args.epochs) if args.epochs is not None else DEFAULT_EPOCHS
+		learning_rate = float(args.learning_rate) if args.learning_rate is not None else DEFAULT_LEARNING_RATE
+		dataset = Dataset.from_csv(dataset_path, args.feature, args.target)
+		output = Path(args.output) if args.output else None
+
+		trainer = GradientDescentTrainer(LinearRegressionModel(), learning_rate)
+		parameters = trainer.train(dataset, epochs)
+		if output is None:
+			model_dir = Path('models')
+			model_dir.mkdir(parents=True, exist_ok=True)
+			output = model_dir / (dataset_path.stem + '.json')
+		ModelConfiguration(parameters, dataset.feature_name, dataset.target_name).save(output)
+		print(f'Model saved: {output}')
+
+		visualizer = RegressionVisualizer()
+		save_plot_arg = args.save_plot
+		if save_plot_arg is not None:
+			if save_plot_arg == '':
+				plot_path = output.with_suffix('.png')
+			else:
+				plot_path = Path(save_plot_arg)
+			visualizer.plot(dataset, parameters, save_path=plot_path, show=args.plot)
+		elif args.plot:
+			visualizer.plot(dataset, parameters, show=True)
+
 	def run(self, argv: list[str] | None = None) -> int:
 		parser = self.build_parser()
 		args = parser.parse_args(argv)
-		if args.command == 'train':
-			dataset_path = Path(args.dataset)
-			feature = args.feature
-			target = args.target
-			epochs = int(args.epochs) if args.epochs is not None else DEFAULT_EPOCHS
-			learning_rate = float(args.learning_rate) if args.learning_rate is not None else DEFAULT_LEARNING_RATE
-			output = Path(args.output) if args.output else None
-			try:
-				dataset = Dataset.from_csv(dataset_path, feature=feature, target=target)
-			except Exception as e:
-				print(f'Error: {e}')
-				return 1
-			model = LinearRegressionModel(None)
-			trainer = GradientDescentTrainer(model, learning_rate)
-			parameters = trainer.train(dataset, epochs)
-			if output is None:
-				model_dir = Path('models')
-				model_dir.mkdir(parents=True, exist_ok=True)
-				output = model_dir / (dataset_path.stem + '.json')
-			cfg = ModelConfiguration(parameters, dataset.feature_name, dataset.target_name)
-			cfg.save(output)
-			print(f'Model saved: {output}')
-
-			visualizer = RegressionVisualizer()
-			save_plot_arg = args.save_plot
-			if save_plot_arg is not None:
-				if save_plot_arg == '':
-					plot_path = output.with_suffix('.png')
-				else:
-					plot_path = Path(save_plot_arg)
-				visualizer.plot(dataset, parameters, save_path=plot_path, show=args.plot)
-			elif args.plot:
-				visualizer.plot(dataset, parameters, show=True)
-			return 0
-
-		if args.command == 'predict':
-			try:
-				try:
-					cfg = ModelConfiguration.from_file(Path(args.model))
-				except FileNotFoundError as e:
-					print(f'Warning: {e.filename}: {e.strerror}.')
-					cfg = ModelConfiguration(Vector([0.0, 0.0]), 'feature', 'target')
-				model = LinearRegressionModel(cfg.thetas)
-				print('Enter a feature value to predict (blank line to quit)')
-				while True:
-					try:
-						raw = input('> ')
-					except EOFError:
-						print()
-						break
-					except KeyboardInterrupt:
-						print()
-						break
-					if raw.strip() == '':
-						continue
-					try:
-						val = float(raw)
-						pred = model.predict(val)
-						print(f'{cfg.feature_name}={val} {cfg.target_name}={pred}')
-					except ValueError:
-						print('Error: Invalid number')
-			except Exception as exc:
-				print(f'Error: {exc}')
-				return 1
-			return 0
+		try:
+			self._predict(args) if args.command == 'predict' else self._train(args)
+		except Exception as e:
+			print(f'Error: {e}')
+			return 1
 		return 0
 
 def main() -> int:
