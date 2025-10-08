@@ -37,7 +37,10 @@ class CommandLineApplication:
 		while True:
 			try:
 				raw = input('> ')
-			except (EOFError | KeyboardInterrupt):
+			except EOFError:
+				print()
+				break
+			except KeyboardInterrupt:
 				print()
 				break
 			if raw.strip() == '':
